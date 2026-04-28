@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useId, useState } from "react";
+import { createPortal } from "react-dom";
+import { useEffect, useId, useState, useSyncExternalStore } from "react";
 import { logoutAction } from "@/app/actions";
 
 const navItems: {
@@ -66,6 +67,12 @@ export function AppShellHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const panelId = useId();
 
+  const mountedOnClient = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
+
   useEffect(() => {
     const id = requestAnimationFrame(() => {
       setMobileOpen(false);
@@ -93,6 +100,80 @@ export function AppShellHeader() {
     };
   }, [mobileOpen]);
 
+  const mobileSheet =
+    mobileOpen && mountedOnClient ? (
+      <div
+        id={panelId}
+        className="fixed inset-0 z-[9999] flex max-h-[100dvh] flex-col bg-[#020617] px-5 pb-[max(1.25rem,env(safe-area-inset-bottom,0px))] pt-[max(0.75rem,env(safe-area-inset-top,0px))] text-white lg:hidden"
+        style={{ backgroundColor: "#020617" }}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="mobile-menu-title"
+      >
+        <div className="pointer-events-none flex justify-center pt-2">
+          <span className="h-1 w-10 rounded-full bg-white/25" aria-hidden />
+        </div>
+
+        <div className="flex shrink-0 items-center justify-between border-b border-white/15 pb-4 pt-3">
+          <div id="mobile-menu-title">
+            <p className="text-xs font-bold uppercase tracking-[0.3em] text-cyan-200">
+              Menu
+            </p>
+            <p className="mt-1 text-lg font-black text-white">Navigate</p>
+          </div>
+          <button
+            type="button"
+            className="rounded-2xl border border-white/20 bg-slate-900 p-3 text-white hover:bg-slate-800"
+            aria-label="Close menu"
+            onClick={() => setMobileOpen(false)}
+          >
+            <CloseIcon />
+          </button>
+        </div>
+
+        <nav className="mt-5 flex min-h-0 flex-1 flex-col justify-center gap-3 overflow-y-auto overscroll-contain">
+          {navItems.map((item) => {
+            const active =
+              item.href === "/"
+                ? pathname === "/"
+                : pathname === item.href ||
+                  pathname.startsWith(`${item.href}/`);
+            const base =
+              "block rounded-2xl border px-5 py-4 text-center text-base font-bold transition active:scale-[0.99]";
+            const inactive = item.emphasis
+              ? "border-cyan-400/50 bg-gradient-to-br from-cyan-950 to-slate-900 text-white shadow-md shadow-black/30"
+              : "border-white/20 bg-slate-900 text-slate-100";
+
+            const activeCls =
+              "border-cyan-400/80 bg-slate-900 text-white shadow-md ring-2 ring-cyan-500/35";
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`${base} ${active ? activeCls : inactive}`}
+                onClick={() => setMobileOpen(false)}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
+
+        <form
+          action={logoutAction}
+          className="shrink-0 border-t border-white/15 pb-[env(safe-area-inset-bottom,0px)] pt-4"
+        >
+          <button
+            type="submit"
+            className="w-full rounded-2xl border border-white/20 bg-slate-900 py-4 text-base font-bold text-slate-100 hover:bg-slate-800"
+          >
+            Sign out
+          </button>
+        </form>
+      </div>
+    ) : null;
+
   return (
     <header className="mb-6 rounded-3xl border border-white/10 bg-white/10 p-4 shadow-2xl shadow-black/20 backdrop-blur sm:mb-8 sm:p-5">
       <div className="flex items-center justify-between gap-4">
@@ -112,7 +193,8 @@ export function AppShellHeader() {
               const active =
                 item.href === "/"
                   ? pathname === "/"
-                  : pathname === item.href || pathname.startsWith(`${item.href}/`);
+                  : pathname === item.href ||
+                    pathname.startsWith(`${item.href}/`);
               const className =
                 item.emphasis && !active
                   ? `${linkDesk} border-cyan-400/35 bg-cyan-300/10 text-white`
@@ -150,86 +232,9 @@ export function AppShellHeader() {
         </button>
       </div>
 
-      {/* Mobile full-screen menu */}
-      {mobileOpen ? (
-        <>
-          <button
-            type="button"
-            className="fixed inset-0 z-40 cursor-default bg-black/55 backdrop-blur-sm lg:hidden"
-            aria-label="Dismiss menu"
-            onClick={() => setMobileOpen(false)}
-          />
-
-          <div
-            id={panelId}
-            className="fixed inset-x-0 bottom-0 top-0 z-50 flex flex-col bg-slate-950/96 px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-14 lg:hidden"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="mobile-menu-title"
-          >
-            <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-center pt-3">
-              <span className="h-1 w-10 rounded-full bg-white/25" aria-hidden />
-            </div>
-
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
-              <div id="mobile-menu-title">
-                <p className="text-xs font-bold uppercase tracking-[0.3em] text-cyan-200">
-                  Menu
-                </p>
-                <p className="mt-1 text-lg font-black text-white">Navigate</p>
-              </div>
-              <button
-                type="button"
-                className="rounded-2xl border border-white/15 p-3 text-white hover:bg-white/10"
-                aria-label="Close menu"
-                onClick={() => setMobileOpen(false)}
-              >
-                <CloseIcon />
-              </button>
-            </div>
-
-            <nav className="mt-6 flex flex-1 flex-col justify-center gap-3">
-              {navItems.map((item) => {
-                const active =
-                  item.href === "/"
-                    ? pathname === "/"
-                    : pathname === item.href || pathname.startsWith(`${item.href}/`);
-                const base =
-                  "block rounded-2xl border px-5 py-4 text-center text-base font-bold transition active:scale-[0.99]";
-                const inactive = item.emphasis
-                  ? "border-cyan-400/35 bg-gradient-to-br from-cyan-300/25 to-transparent text-white shadow-lg shadow-cyan-950/40"
-                  : "border-white/15 bg-white/5 text-slate-100";
-
-                const activeCls =
-                  "border-cyan-300/70 bg-cyan-300/20 text-white shadow-lg shadow-cyan-950/30";
-
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`${base} ${active ? activeCls : inactive}`}
-                    onClick={() => setMobileOpen(false)}
-                  >
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </nav>
-
-            <form
-              action={logoutAction}
-              className="mt-auto border-t border-white/10 pb-[env(safe-area-inset-bottom)] pt-5"
-            >
-              <button
-                type="submit"
-                className="w-full rounded-2xl border border-white/15 py-4 text-base font-bold text-slate-200 hover:bg-white/10"
-              >
-                Sign out
-              </button>
-            </form>
-          </div>
-        </>
-      ) : null}
+      {mountedOnClient && mobileOpen
+        ? createPortal(mobileSheet, document.body)
+        : null}
     </header>
   );
 }
