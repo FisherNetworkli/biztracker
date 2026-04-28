@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { createPortal } from "react-dom";
 import { useEffect, useId, useState, useSyncExternalStore } from "react";
+import { AddToHomeScreen } from "@/components/AddToHomeScreen";
 import { logoutAction } from "@/app/actions";
 
 const navItems: {
@@ -188,6 +189,7 @@ export function AppShellHeader() {
 
         {/* Desktop / large tablet: inline nav */}
         <div className="hidden lg:flex lg:items-center lg:gap-3">
+          <AddToHomeScreen />
           <nav className="flex flex-wrap justify-end gap-2">
             {navItems.map((item) => {
               const active =
@@ -220,16 +222,19 @@ export function AppShellHeader() {
         </div>
 
         {/* Mobile + small tablet: menu control */}
-        <button
-          type="button"
-          className="-mr-1 flex shrink-0 items-center justify-center rounded-2xl border border-white/15 bg-white/10 p-3 text-white transition hover:bg-white/15 lg:hidden"
-          aria-expanded={mobileOpen}
-          aria-controls={panelId}
-          aria-label={mobileOpen ? "Close menu" : "Open menu"}
-          onClick={() => setMobileOpen((open) => !open)}
-        >
-          {mobileOpen ? <CloseIcon /> : <MenuIcon />}
-        </button>
+        <div className="flex shrink-0 items-center gap-2 lg:hidden">
+          <AddToHomeScreen />
+          <button
+            type="button"
+            className="-mr-1 flex shrink-0 items-center justify-center rounded-2xl border border-white/15 bg-white/10 p-3 text-white transition hover:bg-white/15"
+            aria-expanded={mobileOpen}
+            aria-controls={panelId}
+            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            onClick={() => setMobileOpen((open) => !open)}
+          >
+            {mobileOpen ? <CloseIcon /> : <MenuIcon />}
+          </button>
+        </div>
       </div>
 
       {mountedOnClient && mobileOpen
