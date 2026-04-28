@@ -1,9 +1,9 @@
 "use client";
 
 import { createPortal } from "react-dom";
-import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
+import { useCallback, useState, useSyncExternalStore } from "react";
 
-type BeforeInstallPrompt = Event & {
+export type BeforeInstallPrompt = Event & {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 };
@@ -36,27 +36,22 @@ function subscribeStandalone(onChange: () => void) {
   return () => mq.removeListener(onChange);
 }
 
-export function AddToHomeScreen() {
+const menuBtn =
+  "w-full rounded-2xl border px-5 py-4 text-center text-base font-bold transition active:scale-[0.99]";
+
+type Props = {
+  deferredInstall: BeforeInstallPrompt | null;
+  onDeferredConsumed: () => void;
+};
+
+export function AddToHomeScreen({ deferredInstall, onDeferredConsumed }: Props) {
   const standalone = useSyncExternalStore(
     subscribeStandalone,
     getStandaloneSnapshot,
     () => false,
   );
-  const [deferredInstall, setDeferredInstall] =
-    useState<BeforeInstallPrompt | null>(null);
   const [helpOpen, setHelpOpen] = useState(false);
   const [busy, setBusy] = useState(false);
-
-  useEffect(() => {
-    function onBeforeInstall(event: Event) {
-      event.preventDefault();
-      setDeferredInstall(event as BeforeInstallPrompt);
-    }
-
-    window.addEventListener("beforeinstallprompt", onBeforeInstall);
-    return () =>
-      window.removeEventListener("beforeinstallprompt", onBeforeInstall);
-  }, []);
 
   const handleInstall = useCallback(async () => {
     if (!deferredInstall) {
@@ -68,9 +63,9 @@ export function AddToHomeScreen() {
       await deferredInstall.userChoice;
     } finally {
       setBusy(false);
-      setDeferredInstall(null);
+      onDeferredConsumed();
     }
-  }, [deferredInstall]);
+  }, [deferredInstall, onDeferredConsumed]);
 
   const helpTitle = isIosDevice()
     ? "Add Biz Tracker on iPhone or iPad"
@@ -136,8 +131,11 @@ export function AddToHomeScreen() {
 
   if (standalone) {
     return (
-      <p className="text-[10px] font-medium uppercase tracking-wider text-slate-500 sm:text-xs">
-        App mode
+      <p
+        className={`${menuBtn} border-white/10 bg-slate-900/50 text-sm font-semibold text-slate-500`}
+        role="status"
+      >
+        Running as installed app
       </p>
     );
   }
@@ -148,9 +146,9 @@ export function AddToHomeScreen() {
         type="button"
         disabled={busy}
         onClick={handleInstall}
-        className="rounded-full border border-cyan-400/40 bg-cyan-300/15 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-cyan-100 hover:bg-cyan-300/25 disabled:opacity-60 sm:text-xs"
+        className={`${menuBtn} border-cyan-400/50 bg-cyan-300/15 text-cyan-50 hover:bg-cyan-300/25 disabled:opacity-60`}
       >
-        {busy ? "Installing…" : "Install"}
+        {busy ? "Installing…" : "Install app"}
       </button>
     );
   }
@@ -160,7 +158,7 @@ export function AddToHomeScreen() {
       <button
         type="button"
         onClick={() => setHelpOpen(true)}
-        className="rounded-full border border-white/15 bg-white/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-200 hover:bg-white/15 sm:px-3 sm:text-xs"
+        className={`${menuBtn} border-white/20 bg-slate-900 text-slate-100 hover:bg-slate-800`}
       >
         Add to Home Screen
       </button>

@@ -4,7 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { createPortal } from "react-dom";
 import { useEffect, useId, useState, useSyncExternalStore } from "react";
-import { AddToHomeScreen } from "@/components/AddToHomeScreen";
+import {
+  AddToHomeScreen,
+  type BeforeInstallPrompt,
+} from "@/components/AddToHomeScreen";
 import { logoutAction } from "@/app/actions";
 
 const navItems: {
@@ -67,12 +70,25 @@ export function AppShellHeader() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const panelId = useId();
+  const [deferredInstall, setDeferredInstall] =
+    useState<BeforeInstallPrompt | null>(null);
 
   const mountedOnClient = useSyncExternalStore(
     () => () => {},
     () => true,
     () => false,
   );
+
+  useEffect(() => {
+    function onBeforeInstall(event: Event) {
+      event.preventDefault();
+      setDeferredInstall(event as BeforeInstallPrompt);
+    }
+
+    window.addEventListener("beforeinstallprompt", onBeforeInstall);
+    return () =>
+      window.removeEventListener("beforeinstallprompt", onBeforeInstall);
+  }, []);
 
   useEffect(() => {
     const id = requestAnimationFrame(() => {
@@ -132,6 +148,13 @@ export function AppShellHeader() {
           </button>
         </div>
 
+        <div className="mt-4 shrink-0">
+          <AddToHomeScreen
+            deferredInstall={deferredInstall}
+            onDeferredConsumed={() => setDeferredInstall(null)}
+          />
+        </div>
+
         <nav className="mt-5 flex min-h-0 flex-1 flex-col justify-center gap-3 overflow-y-auto overscroll-contain">
           {navItems.map((item) => {
             const active =
@@ -188,7 +211,6 @@ export function AppShellHeader() {
         </Link>
 
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-          <AddToHomeScreen />
           <nav className="hidden flex-wrap justify-end gap-2 lg:flex">
             {navItems.map((item) => {
               const active =
