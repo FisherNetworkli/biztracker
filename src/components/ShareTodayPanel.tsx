@@ -120,7 +120,15 @@ export function ShareTodayPanel({ entry }: Props) {
               </div>
               <div>
                 <p className="font-bold text-slate-300">What I need</p>
-                <p className="mt-1 leading-relaxed text-white">{entry.what_i_need}</p>
+                {entry.what_i_need ? (
+                  <p className="mt-1 leading-relaxed text-white">
+                    {entry.what_i_need}
+                  </p>
+                ) : (
+                  <p className="mt-1 leading-relaxed text-slate-500">
+                    Nothing from the group today.
+                  </p>
+                )}
               </div>
               {entry.blocker_question ? (
                 <div className="rounded-2xl border border-rose-400/30 bg-rose-500/15 p-4">

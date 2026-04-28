@@ -62,7 +62,9 @@ export default async function HelpFeedPage() {
                   <p className="text-sm font-bold text-slate-200">
                     Specific ask
                   </p>
-                  <p className="mt-2 text-slate-300">{entry.what_i_need}</p>
+                  <p className="mt-2 text-slate-300">
+                    {entry.what_i_need || "No specific ask listed."}
+                  </p>
                 </div>
               </div>
             </article>

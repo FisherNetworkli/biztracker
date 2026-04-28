@@ -15,7 +15,7 @@ create table if not exists public.daily_entries (
   what_i_did_today text not null,
   win text not null,
   blocker_question text,
-  what_i_need text not null,
+  what_i_need text,
   deal_stage text not null check (
     deal_stage in (
       'No Activity',

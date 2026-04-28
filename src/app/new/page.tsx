@@ -1,5 +1,6 @@
 import { createEntryAction } from "@/app/actions";
 import { BlockerSection } from "@/components/BlockerSection";
+import { NeedFromGroupSection } from "@/components/NeedFromGroupSection";
 import { AppShell } from "@/components/AppShell";
 import { requireTrackerAccess } from "@/lib/auth";
 import { dealStages, urgencies } from "@/lib/tracker";
@@ -108,15 +109,7 @@ export default async function NewEntryPage({
 
           <BlockerSection inputClassName={inputClass} />
 
-          <Field label="What I need from the group today" name="what_i_need">
-            <textarea
-              name="what_i_need"
-              required
-              rows={3}
-              className={inputClass}
-              placeholder="Be specific, e.g. help structuring seller financing terms"
-            />
-          </Field>
+          <NeedFromGroupSection inputClassName={inputClass} />
 
           <div className="grid gap-5 md:grid-cols-2">
             <Field label="Deal stage" name="deal_stage">

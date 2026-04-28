@@ -36,7 +36,11 @@ export function LatestEntryCard({ entry }: { entry: LatestEntry }) {
         </div>
         <div>
           <p className="font-bold text-slate-200">What they need</p>
-          <p className="mt-1 text-slate-300">{entry.what_i_need}</p>
+          {entry.what_i_need ? (
+            <p className="mt-1 text-slate-300">{entry.what_i_need}</p>
+          ) : (
+            <p className="mt-1 text-slate-500">Nothing listed for today.</p>
+          )}
         </div>
         {entry.blocker_question ? (
           <div className="rounded-2xl border border-rose-300/30 bg-rose-500/10 p-3">

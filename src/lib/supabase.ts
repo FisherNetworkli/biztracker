@@ -11,7 +11,7 @@ type DailyEntryInsert = {
   what_i_did_today: string;
   win: string;
   blocker_question?: string | null;
-  what_i_need: string;
+  what_i_need: string | null;
   deal_stage: DealStage;
   link_url?: string | null;
   urgency: Urgency;

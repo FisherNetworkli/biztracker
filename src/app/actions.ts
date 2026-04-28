@@ -89,6 +89,23 @@ export async function createEntryAction(formData: FormData) {
     );
   }
 
+  const hasNeedFromGroup = getString(formData, "has_need_from_group");
+  const needDetails = getString(formData, "what_i_need");
+
+  if (hasNeedFromGroup !== "yes" && hasNeedFromGroup !== "no") {
+    redirectWithError(
+      "/new",
+      "Say whether you need anything from the group today.",
+    );
+  }
+
+  if (hasNeedFromGroup === "yes" && !needDetails) {
+    redirectWithError(
+      "/new",
+      "Describe what you need from the group, or choose no if you do not need anything.",
+    );
+  }
+
   const entry: EntryInsert = {
     name: getString(formData, "name"),
     day,
@@ -97,7 +114,7 @@ export async function createEntryAction(formData: FormData) {
     what_i_did_today: getString(formData, "what_i_did_today"),
     win: getString(formData, "win"),
     blocker_question: hasBlocker === "yes" ? blockerDetails : null,
-    what_i_need: getString(formData, "what_i_need"),
+    what_i_need: hasNeedFromGroup === "yes" ? needDetails : null,
     deal_stage: dealStage,
     link_url: null,
     urgency,
@@ -109,7 +126,6 @@ export async function createEntryAction(formData: FormData) {
     entry.todays_focus,
     entry.what_i_did_today,
     entry.win,
-    entry.what_i_need,
   ];
 
   if (requiredFields.some((field) => !field)) {
