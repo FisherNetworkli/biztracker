@@ -15,7 +15,58 @@ export const dynamic = "force-dynamic";
 export default async function Home() {
   await requireTrackerAccess();
 
-  const latestEntries = await getLatestEntries();
+  let latestEntries;
+
+  try {
+    latestEntries = await getLatestEntries();
+  } catch {
+    return (
+      <AppShell>
+        <section
+          role="alert"
+          className="mx-auto max-w-2xl rounded-3xl border border-amber-400/45 bg-amber-500/10 p-8 text-slate-200 shadow-xl"
+        >
+          <p className="text-sm font-bold uppercase tracking-wide text-amber-300">
+            Configuration
+          </p>
+          <h1 className="mt-2 text-3xl font-black text-white">
+            Cannot reach the database from this deployment
+          </h1>
+          <p className="mt-4 leading-relaxed">
+            Add these in Vercel (Project → Settings → Environment Variables) for{" "}
+            <strong className="text-white">Production</strong>, then redeploy:
+          </p>
+          <ul className="mt-4 list-disc space-y-2 pl-5 text-sm">
+            <li>
+              <code className="rounded bg-slate-950 px-2 py-1 text-cyan-200">
+                SUPABASE_URL
+              </code>
+            </li>
+            <li>
+              <code className="rounded bg-slate-950 px-2 py-1 text-cyan-200">
+                SUPABASE_PUBLISHABLE_KEY
+              </code>{" "}
+              (recommended for this repo){" "}
+              <span className="text-slate-500">or</span>{" "}
+              <code className="rounded bg-slate-950 px-2 py-1 text-cyan-200">
+                SUPABASE_SERVICE_ROLE_KEY
+              </code>
+            </li>
+            <li>
+              <code className="rounded bg-slate-950 px-2 py-1 text-cyan-200">
+                TRACKER_PASSWORD
+              </code>{" "}
+              (already required for login)
+            </li>
+          </ul>
+          <p className="mt-4 text-sm text-slate-400">
+            Values come from Supabase → Project Settings → API. Avoid putting private keys in{" "}
+            <code className="text-slate-500">NEXT_PUBLIC_*</code> variables.
+          </p>
+        </section>
+      </AppShell>
+    );
+  }
   const highUrgencyCount = latestEntries.filter(
     (entry) => entry.urgency === "High",
   ).length;

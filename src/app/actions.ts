@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
   clearTrackerAccessCookie,
+  isTrackerPasswordConfigured,
   isValidTrackerPassword,
   requireTrackerAccess,
   setTrackerAccessCookie,
@@ -27,6 +28,13 @@ function redirectWithError(path: string, message: string): never {
 
 export async function loginAction(formData: FormData) {
   const password = getString(formData, "password");
+
+  if (!isTrackerPasswordConfigured()) {
+    redirectWithError(
+      "/login",
+      "Sign-in is disabled: add TRACKER_PASSWORD in Vercel (Project → Settings → Environment Variables).",
+    );
+  }
 
   if (!password) {
     redirectWithError("/login", "Enter the team password.");

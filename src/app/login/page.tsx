@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { loginAction } from "@/app/actions";
-import { hasTrackerAccess } from "@/lib/auth";
+import { hasTrackerAccess, isTrackerPasswordConfigured } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +15,7 @@ export default async function LoginPage({
 
   const { error, wrong } = await searchParams;
   const showWrongPassword = wrong === "1" || wrong === "true";
+  const passwordConfigured = isTrackerPasswordConfigured();
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-950 px-4 py-12 text-white">
@@ -28,6 +29,20 @@ export default async function LoginPage({
         <p className="mt-3 text-slate-300">
           This keeps the dashboard simple while avoiding a fully public tracker.
         </p>
+
+        {!passwordConfigured ? (
+          <div
+            role="alert"
+            className="mt-6 rounded-2xl border border-amber-400/45 bg-amber-500/15 p-4 text-sm leading-relaxed text-amber-100"
+          >
+            <p className="font-black text-white">Deploy configuration needed</p>
+            <p className="mt-2">
+              The server does not have <code className="rounded bg-slate-950 px-1.5 py-0.5 text-xs">TRACKER_PASSWORD</code>{" "}
+              set. Add it in Vercel (Project → Settings → Environment Variables),
+              then redeploy. Without it, nobody can log in.
+            </p>
+          </div>
+        ) : null}
 
         {showWrongPassword ? (
           <div
@@ -69,7 +84,11 @@ export default async function LoginPage({
               placeholder="Shared team password"
             />
           </label>
-          <button className="w-full rounded-2xl bg-cyan-300 px-5 py-3 font-black text-slate-950 transition hover:bg-cyan-200">
+          <button
+            type="submit"
+            disabled={!passwordConfigured}
+            className="w-full rounded-2xl bg-cyan-300 px-5 py-3 font-black text-slate-950 transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-40"
+          >
             Open dashboard
           </button>
         </form>
