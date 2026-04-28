@@ -144,7 +144,11 @@ export default async function Home() {
                 <div className="mt-4 space-y-4">
                   <div>
                     <p className="text-sm font-bold uppercase tracking-wide text-rose-100">
-                      3 stuck
+                      {stuckEntries.length === 0
+                        ? "No one stuck"
+                        : stuckEntries.length === 1
+                          ? "1 stuck"
+                          : `${stuckEntries.length} stuck`}
                     </p>
                     <div className="mt-2 space-y-2">
                       {stuckEntries.slice(0, 3).map((entry) => (
@@ -162,7 +166,11 @@ export default async function Home() {
 
                   <div>
                     <p className="text-sm font-bold uppercase tracking-wide text-emerald-100">
-                      3 wins
+                      {wins.length === 0
+                        ? "No wins flagged"
+                        : wins.length === 1
+                          ? "1 win"
+                          : `${wins.length} wins`}
                     </p>
                     <div className="mt-2 space-y-2">
                       {wins.map((entry) => (
