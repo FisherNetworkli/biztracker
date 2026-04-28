@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { StuckPill, UrgencyPill } from "@/components/StatusPill";
 import type { LatestEntry } from "@/lib/tracker";
 
@@ -17,6 +18,7 @@ export function LatestEntryCard({ entry }: { entry: LatestEntry }) {
         </div>
       </div>
 
+      <div className="flex flex-1 flex-col">
       <div className="mt-5 rounded-2xl bg-slate-950/50 p-4">
         <p className="text-xs font-bold uppercase tracking-wide text-cyan-200">
           Current Stage
@@ -44,6 +46,16 @@ export function LatestEntryCard({ entry }: { entry: LatestEntry }) {
             <p className="mt-1 text-rose-50">{entry.blocker_question}</p>
           </div>
         ) : null}
+      </div>
+      </div>
+
+      <div className="mt-auto border-t border-white/10 pt-4">
+        <Link
+          href={`/share/${entry.id}`}
+          className="text-sm font-bold text-cyan-200 hover:text-cyan-100"
+        >
+          Share today card (image)
+        </Link>
       </div>
     </article>
   );

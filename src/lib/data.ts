@@ -8,13 +8,38 @@ import {
   normalizeName,
 } from "@/lib/tracker";
 
-export async function createDailyEntry(entry: EntryInsert) {
+export async function createDailyEntry(entry: EntryInsert): Promise<DailyEntry> {
   const supabase = getSupabaseAdmin();
-  const { error } = await supabase.from("daily_entries").insert(entry);
+  const { data, error } = await supabase
+    .from("daily_entries")
+    .insert(entry)
+    .select("*")
+    .single();
 
   if (error) {
     throw new Error(error.message);
   }
+
+  if (!data) {
+    throw new Error("No row returned after insert.");
+  }
+
+  return data;
+}
+
+export async function getEntryById(id: string): Promise<DailyEntry | null> {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from("daily_entries")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
 }
 
 export async function getAllEntries(limit = 500) {

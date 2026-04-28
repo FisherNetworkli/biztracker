@@ -7,13 +7,14 @@ export const dynamic = "force-dynamic";
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; wrong?: string }>;
 }) {
   if (await hasTrackerAccess()) {
     redirect("/");
   }
 
-  const { error } = await searchParams;
+  const { error, wrong } = await searchParams;
+  const showWrongPassword = wrong === "1" || wrong === "true";
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-950 px-4 py-12 text-white">
@@ -28,8 +29,30 @@ export default async function LoginPage({
           This keeps the dashboard simple while avoiding a fully public tracker.
         </p>
 
-        {error ? (
-          <div className="mt-6 rounded-2xl border border-rose-300/30 bg-rose-500/10 p-3 text-sm font-semibold text-rose-100">
+        {showWrongPassword ? (
+          <div
+            role="alert"
+            aria-live="assertive"
+            className="mt-6 rounded-2xl border border-rose-400/50 bg-rose-500/15 p-4 shadow-lg shadow-rose-950/20"
+          >
+            <p className="text-xs font-bold uppercase tracking-wide text-rose-300">
+              Access denied
+            </p>
+            <p className="mt-2 text-lg font-black text-white">Wrong password</p>
+            <p className="mt-2 text-sm leading-relaxed text-rose-100/95">
+              That does not match the current team password. Try again carefully,
+              copy-pasting if needed, or ask whoever runs the tracker for this
+              month&apos;s password.
+            </p>
+          </div>
+        ) : null}
+
+        {error && !showWrongPassword ? (
+          <div
+            role="alert"
+            aria-live="polite"
+            className="mt-6 rounded-2xl border border-rose-400/40 bg-rose-500/12 p-4 text-sm font-semibold text-rose-100"
+          >
             {error}
           </div>
         ) : null}

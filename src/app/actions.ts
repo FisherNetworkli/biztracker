@@ -10,6 +10,7 @@ import {
 } from "@/lib/auth";
 import { createDailyEntry } from "@/lib/data";
 import {
+  type DailyEntry,
   type EntryInsert,
   isDealStage,
   isUrgency,
@@ -27,8 +28,12 @@ function redirectWithError(path: string, message: string): never {
 export async function loginAction(formData: FormData) {
   const password = getString(formData, "password");
 
-  if (!password || !isValidTrackerPassword(password)) {
-    redirectWithError("/login", "That password did not work.");
+  if (!password) {
+    redirectWithError("/login", "Enter the team password.");
+  }
+
+  if (!isValidTrackerPassword(password)) {
+    redirect("/login?wrong=1");
   }
 
   await setTrackerAccessCookie();
@@ -103,21 +108,20 @@ export async function createEntryAction(formData: FormData) {
     redirectWithError("/new", "Fill out every required field.");
   }
 
-  let errorMessage = "";
+  let newEntry: DailyEntry;
 
   try {
-    await createDailyEntry(entry);
+    newEntry = await createDailyEntry(entry);
   } catch (error) {
-    errorMessage =
-      error instanceof Error ? error.message : "Could not save this entry.";
-  }
-
-  if (errorMessage) {
-    redirectWithError("/new", errorMessage);
+    redirectWithError(
+      "/new",
+      error instanceof Error ? error.message : "Could not save this entry.",
+    );
   }
 
   revalidatePath("/");
   revalidatePath("/help");
   revalidatePath("/leaderboard");
-  redirect("/");
+  revalidatePath(`/share/${newEntry.id}`);
+  redirect(`/share/${newEntry.id}`);
 }
