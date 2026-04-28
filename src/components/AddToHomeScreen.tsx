@@ -1,5 +1,6 @@
 "use client";
 
+import { createPortal } from "react-dom";
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 
 type BeforeInstallPrompt = Event & {
@@ -27,8 +28,12 @@ function getStandaloneSnapshot(): boolean {
 
 function subscribeStandalone(onChange: () => void) {
   const mq = window.matchMedia("(display-mode: standalone)");
-  mq.addEventListener("change", onChange);
-  return () => mq.removeEventListener("change", onChange);
+  if (typeof mq.addEventListener === "function") {
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }
+  mq.addListener(onChange);
+  return () => mq.removeListener(onChange);
 }
 
 export function AddToHomeScreen() {
@@ -100,33 +105,34 @@ export function AddToHomeScreen() {
     </ol>
   );
 
-  const helpSheet = helpOpen ? (
-    <div
-      className="fixed inset-0 z-[10001] flex items-end justify-center bg-black/70 p-4 sm:items-center"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="add-home-title"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) {
-          setHelpOpen(false);
-        }
-      }}
-    >
-      <div className="w-full max-w-md rounded-3xl border border-white/15 bg-[#020617] p-6 shadow-2xl">
-        <h2 id="add-home-title" className="text-lg font-black text-white">
-          {helpTitle}
-        </h2>
-        {helpBody}
-        <button
-          type="button"
-          className="mt-6 w-full rounded-2xl bg-cyan-300 py-3 text-sm font-black text-slate-950"
-          onClick={() => setHelpOpen(false)}
-        >
-          Got it
-        </button>
+  const helpSheet =
+    helpOpen && typeof document !== "undefined" ? (
+      <div
+        className="fixed inset-0 z-[10050] flex items-end justify-center bg-black/70 p-4 sm:items-center"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="add-home-title"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) {
+            setHelpOpen(false);
+          }
+        }}
+      >
+        <div className="w-full max-w-md rounded-3xl border border-white/15 bg-[#020617] p-6 shadow-2xl">
+          <h2 id="add-home-title" className="text-lg font-black text-white">
+            {helpTitle}
+          </h2>
+          {helpBody}
+          <button
+            type="button"
+            className="mt-6 w-full rounded-2xl bg-cyan-300 py-3 text-sm font-black text-slate-950"
+            onClick={() => setHelpOpen(false)}
+          >
+            Got it
+          </button>
+        </div>
       </div>
-    </div>
-  ) : null;
+    ) : null;
 
   if (standalone) {
     return (
@@ -158,7 +164,7 @@ export function AddToHomeScreen() {
       >
         Add to Home Screen
       </button>
-      {helpSheet}
+      {helpSheet ? createPortal(helpSheet, document.body) : null}
     </>
   );
 }

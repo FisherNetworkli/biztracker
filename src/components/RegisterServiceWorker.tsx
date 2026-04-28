@@ -8,17 +8,11 @@ export function RegisterServiceWorker() {
       return;
     }
 
-    const register = () => {
-      void navigator.serviceWorker.register("/sw.js").catch(() => {
-        /* non-fatal: install UI still helps on Safari / manual add */
+    void navigator.serviceWorker
+      .register("/sw.js", { scope: "/", updateViaCache: "none" })
+      .catch(() => {
+        /* non-fatal: Safari / in-app browsers may block SW; instructions still work */
       });
-    };
-
-    if (document.readyState === "complete") {
-      register();
-    } else {
-      window.addEventListener("load", register, { once: true });
-    }
   }, []);
 
   return null;
